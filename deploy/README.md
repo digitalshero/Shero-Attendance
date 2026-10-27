@@ -26,11 +26,33 @@ directory, nothing inside `/data/kob-crm` is read or written by this project.
 | Build command | `npm run build` (tsc → `dist/`) — verified present |
 | Start command | `node dist/server.js`, now binds to `127.0.0.1` not `0.0.0.0` (fixed in `src/server.ts`) |
 | Required env vars | `POSTGRES_URL`, `JWT_SECRET`, `HOST`, `PORT`, `FRONTEND_URL` (see `.env.production.example`) |
-| DB SSL | `db.ts` uses SSL unless `PGSSLMODE=disable` — leave unset in production so RDS SSL is enforced |
+| DB SSL | `db.ts` requires SSL **with certificate verification** unless `PGSSLMODE=disable` — in production it reads the CA bundle from `DATABASE_SSL_CA_PATH` and refuses to start if that file is missing or unreadable (see section 3a) |
 | CORS | Driven by `FRONTEND_URL` env var — set to the real domain once confirmed; currently also allows `*.vercel.app` for the existing frontend, harmless to leave but can be removed once Vercel is decommissioned |
 | JWT | Stateless, 365-day expiry, signed with `JWT_SECRET` — no DB-backed sessions to migrate |
 | Health check | `GET /api/health` → `{"status":"ok"}`, already implemented, no changes needed |
 | Upload storage | `backend/uploads/leave-attachments/` on local disk via multer — must persist across deploys (not wiped by `git pull`/rebuild) and should be backed up |
+
+## 3a. PostgreSQL TLS certificate verification (RDS CA)
+
+The backend never connects to Postgres with an unverified TLS certificate in production.
+`db.ts` requires `DATABASE_SSL_CA_PATH` to point at a readable CA bundle and fails to start
+(throws before listening) if it's missing — it does not silently fall back to an insecure
+connection. `PGSSLMODE=disable` is the only opt-out, and it's meant for local dev only.
+
+Install the CA bundle on the server, outside the git-managed directory:
+
+```bash
+sudo mkdir -p /data/shero-attendance/certs
+# ap-south-1 regional bundle (covers the RDS instance's region):
+sudo curl -o /data/shero-attendance/certs/rds-ca.pem \
+  https://truststore.pki.rds.amazonaws.com/ap-south-1/ap-south-1-bundle.pem
+sudo chown shero-attendance:shero-attendance /data/shero-attendance/certs/rds-ca.pem
+sudo chmod 644 /data/shero-attendance/certs/rds-ca.pem
+```
+
+Then set `DATABASE_SSL_CA_PATH=/data/shero-attendance/certs/rds-ca.pem` in `backend/.env`
+(already the default in `.env.production.example`). This bundle is public AWS material (not
+a secret) and is intentionally kept outside the repo so it's managed per-server, not per-deploy.
 
 ## 3. Shared-server isolation checklist
 
@@ -65,14 +87,20 @@ sudo mkdir -p /data/shero-attendance
 sudo chown shero-attendance:shero-attendance /data/shero-attendance
 sudo -u shero-attendance git clone https://github.com/digitalshero/Shero-Attendance.git /data/shero-attendance/src
 
-# 2. Backend build
+# 2. RDS CA bundle (see section 3a) — required before the backend will start
+sudo mkdir -p /data/shero-attendance/certs
+sudo curl -o /data/shero-attendance/certs/rds-ca.pem \
+  https://truststore.pki.rds.amazonaws.com/ap-south-1/ap-south-1-bundle.pem
+sudo chown shero-attendance:shero-attendance /data/shero-attendance/certs/rds-ca.pem
+
+# 3. Backend build
 cd /data/shero-attendance/src/backend
 npm ci
 npm run build
 cp .env.production.example /data/shero-attendance/backend/.env   # then edit real values, chmod 600
 mkdir -p /data/shero-attendance/backend/uploads/leave-attachments
 
-# 3. Frontend build
+# 4. Frontend build
 cd /data/shero-attendance/src/frontend
 cp .env.production.example .env.production   # edit VITE_API_URL
 npm ci
@@ -80,20 +108,20 @@ npm run build
 sudo mkdir -p /data/shero-attendance/frontend-dist
 sudo cp -r dist/* /data/shero-attendance/frontend-dist/
 
-# 4. systemd
+# 5. systemd
 sudo cp deploy/shero-attendance.service /etc/systemd/system/shero-attendance.service
 sudo systemctl daemon-reload
 sudo systemctl enable shero-attendance
 sudo systemctl start shero-attendance
 sudo systemctl status shero-attendance   # verify active (running)
 
-# 5. Nginx (new site only — does not touch existing sites)
+# 6. Nginx (new site only — does not touch existing sites)
 sudo cp deploy/nginx/shero-attendance.conf /etc/nginx/sites-available/shero-attendance
 sudo ln -s /etc/nginx/sites-available/shero-attendance /etc/nginx/sites-enabled/shero-attendance
 sudo nginx -t          # MUST pass before reload
 sudo systemctl reload nginx   # reload, never restart, to avoid dropping DST/KOB connections
 
-# 6. TLS (after DNS for the confirmed domain points at this EC2 IP)
+# 7. TLS (after DNS for the confirmed domain points at this EC2 IP)
 sudo certbot --nginx -d <confirmed-domain>
 ```
 
