@@ -12,6 +12,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+// Bind to localhost only: on a shared server this must sit behind Nginx, never reachable directly.
+const HOST = process.env.HOST || '127.0.0.1';
 
 const frontendUrl = process.env.FRONTEND_URL || process.env.CLIENT_URL;
 
@@ -48,8 +50,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 const startServer = async () => {
   try {
     await connectPostgres();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    app.listen(Number(PORT), HOST, () => {
+      console.log(`Server running on ${HOST}:${PORT}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

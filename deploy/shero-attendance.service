@@ -1,0 +1,33 @@
+[Unit]
+Description=Shero Attendance backend (Express + PostgreSQL)
+After=network.target
+# Intentionally has no dependency on, and will never trigger a restart of, dst.service / kob-crm.service / nginx.service.
+
+[Service]
+Type=simple
+User=shero-attendance
+Group=shero-attendance
+WorkingDirectory=/data/shero-attendance/backend
+EnvironmentFile=/data/shero-attendance/backend/.env
+ExecStart=/usr/bin/node dist/server.js
+Restart=on-failure
+RestartSec=5
+
+# Resource isolation on a shared box — tune after observing real usage.
+MemoryMax=512M
+CPUQuota=100%
+TasksMax=200
+
+# Logs go to journald; read with: journalctl -u shero-attendance -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shero-attendance
+
+# Hardening (safe defaults for a stateless API process)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/data/shero-attendance/backend/uploads
+
+[Install]
+WantedBy=multi-user.target
