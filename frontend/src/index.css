@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased font-sans min-h-screen selection:bg-teal-500 selection:text-white;
+  }
+
+  /* Custom Clean Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  }
+}
+
+@layer components {
+  /* Glass card styling */
+  .glass-card {
+    @apply bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-card rounded-2xl transition-all duration-200;
+  }
+
+  .glass-card-interactive {
+    @apply bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-card hover:shadow-card-hover hover:border-slate-300/80 rounded-2xl transition-all duration-200;
+  }
+
+  /* Stat tile */
+  .stat-card {
+    @apply relative overflow-hidden bg-white rounded-2xl border border-slate-200/70 p-5 shadow-card hover:shadow-card-hover transition-all duration-200;
+  }
+
+  /* Input fields with psychological ergonomics */
+  .form-input {
+    @apply w-full border border-slate-200 px-3.5 py-2.5 rounded-xl text-sm text-slate-800 placeholder-slate-400 bg-white/80 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all duration-150;
+  }
+
+  /* Tactile Button Tokens */
+  .btn-primary {
+    @apply inline-flex items-center justify-center font-medium text-sm text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 active:scale-[0.98] shadow-sm hover:shadow transition-all duration-150 rounded-xl px-4 py-2.5 disabled:opacity-60 disabled:pointer-events-none disabled:active:scale-100;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center font-medium text-sm text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 border border-slate-200 active:scale-[0.98] shadow-sm transition-all duration-150 rounded-xl px-4 py-2.5;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center font-medium text-sm text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] shadow-sm transition-all duration-150 rounded-xl px-4 py-2.5;
+  }
+}

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" class="h-full bg-slate-50 antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Shero Attendance" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <title>Shero Home Food — Attendance & Payroll System</title>
+    <meta name="description" content="Next-Generation Workforce Attendance and Payroll Management System for Shero Home Food" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      #app-splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #042f2e 0%, #0f766e 50%, #115e59 100%);
+        color: #ffffff;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+      }
+      #app-splash-screen.loaded {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .splash-logo-card {
+        width: 110px;
+        height: 110px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 35px rgba(45, 212, 191, 0.4);
+        animation: splash-pulse 2.2s infinite ease-in-out;
+      }
+      .splash-logo-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 18px;
+      }
+      .splash-title {
+        margin-top: 24px;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        text-align: center;
+      }
+      .splash-subtitle {
+        margin-top: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(204, 251, 241, 0.85);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .splash-loader-bar {
+        margin-top: 32px;
+        width: 140px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+      }
+      .splash-loader-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 40%;
+        background: #2dd4bf;
+        border-radius: 999px;
+        animation: splash-loading 1.4s infinite ease-in-out;
+      }
+      @keyframes splash-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      @keyframes splash-loading {
+        0% { left: -40%; width: 30%; }
+        50% { left: 30%; width: 60%; }
+        100% { left: 100%; width: 30%; }
+      }
+    </style>
+  </head>
+  <body class="h-full text-slate-800 bg-slate-50 font-sans selection:bg-teal-500 selection:text-white">
+    <!-- Instant App Splash Screen -->
+    <div id="app-splash-screen">
+      <div class="splash-logo-card">
+        <img src="/logo.png" alt="Shero Attendance" />
+      </div>
+      <div class="splash-title">Shero Home Food</div>
+      <div class="splash-subtitle">Attendance & Workforce System</div>
+      <div class="splash-loader-bar"></div>
+    </div>
+
+    <div id="root" class="h-full"></div>
+    
+    <script>
+      // Dismiss splash screen once React mounts
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const splash = document.getElementById('app-splash-screen');
+          if (splash) splash.classList.add('loaded');
+        }, 500);
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
